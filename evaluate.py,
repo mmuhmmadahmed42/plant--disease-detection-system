@@ -1,0 +1,28 @@
+import os, json, sys
+import numpy as np
+import tensorflow as tf
+
+model = tf.keras.models.load_model("models/plant_model_v3.keras")
+names = json.load(open("class_names_v3.json"))
+folder = sys.argv[1] if len(sys.argv) > 1 else "google_test"
+
+n = t1 = t3 = 0
+print(f"{'photo':36s}{'asli':28s}{'model ka jawab':28s}top3?")
+for f in sorted(os.listdir(folder)):
+    if not f.lower().endswith((".jpg", ".jpeg", ".png")) or "__" not in f:
+        continue
+    true = f.split("__")[0]
+    if true not in names:
+        print("SKIP (naam class_names mein nahi):", f)
+        continue
+    img = tf.keras.utils.load_img(os.path.join(folder, f), target_size=(224, 224))
+    p = model.predict(np.array([tf.keras.utils.img_to_array(img)]), verbose=0)[0]
+    order = p.argsort()[::-1]
+    ok1 = names[order[0]] == true
+    ok3 = true in [names[i] for i in order[:3]]
+    n += 1; t1 += ok1; t3 += ok3
+    print(f"{f[:35]:36s}{true[:27]:28s}{names[order[0]][:22]:22s}{p[order[0]]*100:4.0f}%  {'ok' if ok1 else ('top3' if ok3 else 'GHALAT')}")
+
+if n:
+    print(f"\n{n} photos | top1 {t1/n:.0%} | top3 {t3/n:.0%}")   python evaluate.py
+    

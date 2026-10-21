@@ -1,0 +1,5 @@
+__pycache__/
+uploadimages/*
+!uploadimages/.gitkeep
+models - Copy/
+models/plant_disease_recog_model_pwp*.keras
